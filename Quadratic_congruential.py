@@ -1,5 +1,3 @@
-from typing import Generator
-
 def factor(n):
     """
     Prime factor decomposition
