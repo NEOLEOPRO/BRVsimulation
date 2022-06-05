@@ -41,7 +41,7 @@ def qcg(m: int, k1=1, k2=1, seed1=1, seed2=1, C=1, end=20):
     end: number of last element needed to display
     To display the first n elements set the parameter end.
     Usually prints the first 20.
-    Если по формуле вместо A(i-2) - A(i-1), то чтобы период был наибольшим:
+    Если по формуле вместо A(i-2) - A(i-1), то чтобы период был наибольшим(менять строки 77 и 78 для этого):
     1) (c, m) = 1 т.е c и m – взаимно простые числа;
     2) k2 и k1−1 – кратны q, где q – любой нечетный простой делитель модуля m;
     3) k2 – четное число, причем
@@ -58,6 +58,7 @@ def qcg(m: int, k1=1, k2=1, seed1=1, seed2=1, C=1, end=20):
             k1 = k1 * k[l]
         k2 *= 2
         k1 *= 2
+        k1 += 1
 
 
     if C == 1:
@@ -73,9 +74,10 @@ def qcg(m: int, k1=1, k2=1, seed1=1, seed2=1, C=1, end=20):
     seeds = [0] * m
     for i in range(m):
         seeds[i] = seed1
-        seed1, seed2 = seed2, (k2 * (seed2 ** 2) + k1 * seed1 + C) % m
+        seed1 = (k2 * (seed1 ** 2) + k1 * seed1 + C) % m
+        # seed1, seed2 = seed2, (k2 * (seed2 ** 2) + k1 * seed1 + C) % m
 
     return seeds[0:end], sorted(seeds)[0:end]
 
 
-print(qcg(3145728))
+print(qcg(31450))
