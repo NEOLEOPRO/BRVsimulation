@@ -56,7 +56,7 @@ def qcg(m=2 ** 20, k1=random.randint(0, 2 ** 32), k2=random.randint(0, 2 ** 32),
         seed1 = random.randint(0, m)
     if seed2 == 1:
         seed2 = random.randint(0, m)
-    print('Seeds:', seed1 / m, seed2 / m)
+    print('Seeds:', seed1 / m, seed2 / m, 'Keys:', k1, k2, 'C:', C)
     if not (C % 2):
         C = C + 1
     seeds = [0] * end
