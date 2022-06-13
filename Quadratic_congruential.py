@@ -1,3 +1,8 @@
+import random
+import matplotlib.pyplot as plt
+import numpy
+
+
 def factor(n):
     """
     Prime factor decomposition
@@ -30,54 +35,75 @@ def gcd(x: int, y: int):
     return s
 
 
-def qcg(m: int, k1=1, k2=1, seed1=1, seed2=1, C=1, end=20):
+def qcg(m=2 ** 20, k1=random.randint(0, 2 ** 32), k2=random.randint(0, 2 ** 32), seed1=1, seed2=1,
+        C=random.randint(0, 2 ** 32), end=20):
     """
     A(i) = (k2 * A(i-1)^2 + k1 * A(i-2) + C) mod m, i = 1,2,3...
-    m: m
-    k1: k1
-    k2: k2
-    seed1: A1
-    seed2: A2
-    end: number of last element needed to display
-    To display the first n elements set the parameter end.
-    Usually prints the first 20.
-    Если по формуле вместо A(i-2) - A(i-1), то чтобы период был наибольшим(менять строки 77 и 78 для этого):
-    1) (c, m) = 1 т.е c и m – взаимно простые числа;
-    2) k2 и k1−1 – кратны q, где q – любой нечетный простой делитель модуля m;
-    3) k2 – четное число, причем
-    k2 = (k1 − 1) mod 4, если m кратно 4,
-    k2 = (k1 − 1) mod 2, если m кратно 2;
-    4) если модуль m кратен 9, то k2 != 3 * k1 mod 9.
+
+    m: m модуль
+
+    k1: k1 первый коэффициент
+
+    k2: k2 второй коэффициент
+
+    seed1: A1 первое стартовое значение(возводится во 2ю степень)
+
+    seed2: A2 второе стартовое значение
+
+    end: количество первых чисел которые нужно отобразить
     """
-    if k2 == 1 and k1 == 1:
-        f = factor(m)
-        k = [i for i in f if i > 2]
-        for l in range(len(k)):
-            k2 = k2 * k[l]
-        for l in range(len(k)):
-            k1 = k1 * k[l]
-        k2 *= 2
-        k1 *= 2
-        k1 += 1
-
-
-    if C == 1:
-        C = 2 * round(m / 3)
-        while gcd(m, C) != 1:
-            C = C + 1
-
     if seed1 == 1:
-        seed1 = C + 2
+        seed1 = random.randint(0, m)
     if seed2 == 1:
-        seed2 = C - 2
+        seed2 = random.randint(0, m)
+    print('Seeds:', seed1 / m, seed2 / m)
+    if not (C % 2):
+        C = C + 1
+    seeds = [0] * end
+    for i in range(end):
+        seeds[i] = seed1 / m
+        seed1, seed2 = seed2, (k2 * (seed2 ** 2) + k1 * seed1 + C) % m
+    M = numpy.average(seeds)
+    D = numpy.var(seeds)
+    return M, D, seeds
 
-    seeds = [0] * m
-    for i in range(m):
-        seeds[i] = seed1
-        seed1 = (k2 * (seed1 ** 2) + k1 * seed1 + C) % m
-        # seed1, seed2 = seed2, (k2 * (seed2 ** 2) + k1 * seed1 + C) % m
 
-    return seeds[0:end], sorted(seeds)[0:end]
+# можно задать значения к функции чтобы упростить вычисления, увеличивать числа не рекомендуется:
+res = qcg(end=2 ** 20)
+z = res[2]
 
+print('Если коэф. корреляции близок к нулю, это признак хорошего качества входных параметров рекурентной фунции \n'
+      'для генерации последовательности максимальной длинны, соотвественно мат ожидание и дисперсия должны быть \n'
+      'близко равны 0.5 и 1/12(0.083)')
+print()
+print('Мат ожидание:', res[0])
+print('Дисперсия:', res[1])
+print()
 
-print(qcg(31450))
+fig = plt.figure()
+plt.hist(z, bins=10, density=True, log=True)
+plt.title(
+    'Гистограмма квадратичного конгруэнтного метода площадь\nстолбца - вероятность что z(i) попадёт в T(k) интервал')
+plt.ylabel('Вес каждого интервала')
+plt.xlabel('Интервалы T(k) и входящие в них значения z(i)')
+plt.subplots_adjust(left=.23)
+plt.grid(True)
+
+plt.show()
+
+fig = plt.figure()
+
+s = 5  # задать шаг корреляции двух Z
+e = 0
+for i in range(s, len(z)):
+    e += z[i]*z[i-s]
+corr = 12 * e / (len(z) - s) - 3
+print('Коэффициент корреляции:', corr)
+
+for i in range(s, len(z), len(z)//1024): # отображает 1024 точки на графике взятых из массива
+    plt.scatter(z[i], z[i - s], s=3)
+plt.ylabel('Z(i)')
+plt.xlabel('Z(i-s)')
+plt.grid(True)
+
+plt.show()
