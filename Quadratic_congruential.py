@@ -124,12 +124,17 @@ else:
 d = input('Выберите накоплением или нормированная, Enter - первое:')
 if d=='':
     d = False
+    log = True
 else:
     d = True
-plt.hist(z, bins=bins, log=True, density=d)
+    log = False
+plt.hist(z, bins=bins, log=log, density=d)
 plt.title(
     'Гистограмма квадратичного конгруэнтного метода площадь\nстолбца - вероятность что z(i) попадёт в T(k) интервал')
-plt.ylabel(f'Кол-во точек в интервале длинной {"%.2f" % (1/bins)}')
+if d == False:
+    plt.ylabel(f'Кол-во точек в интервале длинной {"%.2f" % (1/bins)}')
+else:
+    plt.ylabel('Вес интервала T(k)')
 plt.xlabel('Интервалы T(k) и входящие в них значения z(i)')
 plt.subplots_adjust(left=.23)
 plt.grid(True)
