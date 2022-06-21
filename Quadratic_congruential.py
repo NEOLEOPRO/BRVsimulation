@@ -1,7 +1,6 @@
 import random
 import matplotlib.pyplot as plt
-import numpy
-
+import numpy as np
 
 def factor(n):
     """
@@ -35,6 +34,21 @@ def gcd(x: int, y: int):
     return s
 
 
+
+def fornormhist(z, bins):
+    '''Подсчёт вероятностей'''
+    zsorted = sorted(z)
+    l = len(z)
+    r =[0]
+    u = 0
+    for j in range(1, bins+2):
+        for i in range(sum(r), l):
+            if zsorted[i] >= j/(bins+1):
+                r.append(i - sum(r))
+                break
+    return [i/l for i in r][1:]
+
+
 def qcg(m, k1, k2, seed1, seed2, C, end):
     """
     A(i) = (k2 * A(i-1)^2 + k1 * A(i-2) + C) mod m, i = 1,2,3...
@@ -58,8 +72,8 @@ def qcg(m, k1, k2, seed1, seed2, C, end):
     for i in range(end):
         seeds[i] = seed1 / m
         seed1, seed2 = seed2, (k2 * (seed2 ** 2) + k1 * seed1 + C) % m
-    M = numpy.average(seeds)
-    D = numpy.var(seeds)
+    M = np.average(seeds)
+    D = np.var(seeds)
     return M, D, seeds
 
 
@@ -109,11 +123,12 @@ else:
         end = 2 ** 20
     res = qcg(m=int(m), k1=int(k1), k2=int(k2), seed1=int(seed1), seed2=int(seed2), C=int(C), end=int(end))
 
-z = res[2]
 
+z = res[2]
+l = len(z)
 print('Мат ожидание:', res[0])
 print('Дисперсия:', res[1])
-print()
+
 
 fig = plt.figure()
 bins = input('Введите кол-во интервалов для гистограммы, Enter - стандартное:')
@@ -121,20 +136,15 @@ if bins=='':
     bins = 30
 else:
     bins = int(bins)
-d = input('Выберите накоплением или нормированная, Enter - первое:')
+d = input('Выберите гистограмму с накоплением или нормированную, Enter - первое:')
 if d=='':
-    d = False
-    log = True
-else:
-    d = True
-    log = False
-plt.hist(z, bins=bins, log=log, density=d)
-if d == False:
-    plt.title('Гистограмма квадратичного конгруэнтного метода')
+    plt.hist(z, bins=bins, log=True, density=False, rwidth=0.8)
+    plt.title('Гистограмма квадратичного конгруэнтного\nметода с кол-вом попаданий в интервал')
     plt.ylabel(f'Кол-во точек в интервале длинной {"%.2f" % (1/bins)}')
 else:
-    plt.title('Гистограмма квадратичного конгруэнтного метода площадь\nстолбца - вероятность что z(i) попадёт в T(k) интервал')
-    plt.ylabel('Вес интервала T(k)')
+    plt.hist(np.arange(0, 1, 1/bins), bins=np.arange(0, 1+1/bins, 1/bins), log=False, rwidth=0.8, weights=fornormhist(z, bins))
+    plt.title('Гистограмма квадратичного конгруэнтного\nметода с вероятностями попаданий в интервал')
+    plt.ylabel('Вероятность попадания в T(k)')
 plt.xlabel('Интервалы T(k) и входящие в них значения z(i)')
 plt.subplots_adjust(left=.23)
 plt.grid(True)
